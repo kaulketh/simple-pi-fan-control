@@ -1,10 +1,10 @@
-### The Plan
+### Plan
 
 I would have to switch the fan directly using a small piece of software via a
 GPIO pin. The program reads the CPU temperature and then switches the fan. The
 OS should start the program periodically or automatically.
 
-### The Structure
+### Structure
 
 The GPIO pins of the Raspberry Pi have 3V3 logic and cannot switch the power
 even of such a small fan directly. That's why a switching amplifier is needed.
