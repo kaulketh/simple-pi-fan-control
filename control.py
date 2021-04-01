@@ -7,14 +7,15 @@ import RPi.GPIO as GPIO
 
 class FanControl:
     def __init__(self,
-                 fan_pin: int, check_interval: float,
-                 max_temp: float = 65, min_temp: float = 45,
-                 out=sys.stdout):
+                 fan_pin: int,
+                 check_interval: float = 60,
+                 max_temp: float = 65, min_temp: float = 45
+                 ):
         self.__wait = check_interval
         self.__min = min_temp
         self.__max = max_temp
         self.__pin = fan_pin
-        self.__out = out
+        self.__out = sys.stdout
 
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
