@@ -39,4 +39,4 @@ and [wiring image](hardware/wiring.png)
 ### Auto run at boot up
 
 One possibility is described in **_service_** directory. Refer
-to [AUTORUN.md](service/AUTORUN.md)
+to [README](service/README.md)
