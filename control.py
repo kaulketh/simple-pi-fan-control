@@ -13,13 +13,14 @@ class FanControl:
                  fan_pin: int,
                  check_interval: float = 60,
                  max_temp: float = 65, min_temp: float = 45,
-                 source: str = __VCGENCMD
+                 thermalzone: bool = False
                  ):
         self.__wait = check_interval
         self.__min = min_temp
         self.__max = max_temp
         self.__pin = fan_pin
-        self.__source = source
+        self.__source_v = not thermalzone  # per default
+        self.__source_t = thermalzone
         self.__out = sys.stdout
 
         GPIO.setwarnings(False)
@@ -52,13 +53,15 @@ class FanControl:
 
     def __run(self):
 
+        global temp
         while True:
-            if self.__source == FanControl.__THERMALZONE:
-                temp = self.__thermal_zone_temp()
-            else:
-                temp = self.__vcgencmd_temp()
 
             try:
+                if self.__source_t:
+                    temp = self.__thermal_zone_temp()
+                else:
+                    temp = self.__vcgencmd_temp()
+
                 if temp >= self.__max and self.__pin_state() == 0:
                     self.__out.write(f"{temp}°C >= max limit, fan on.\n")
                     GPIO.output(self.__pin, True)
