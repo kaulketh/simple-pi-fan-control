@@ -11,16 +11,15 @@ class FanControl:
 
     def __init__(self,
                  fan_pin: int,
-                 check_interval: float = 60,
-                 max_temp: float = 65, min_temp: float = 45,
-                 thermalzone: bool = False
+                 max_temp: float = 60, min_temp: float = 50,
+                 poll_seconds: float = None
                  ):
-        self.__wait = check_interval
+        self.__wait = poll_seconds if poll_seconds is not None \
+                                      and poll_seconds >= 30 else 30
+
         self.__min = min_temp
         self.__max = max_temp
         self.__pin = fan_pin
-        self.__source_v = not thermalzone  # per default
-        self.__source_t = thermalzone
         self.__out = sys.stdout
 
         GPIO.setwarnings(False)
@@ -37,43 +36,47 @@ class FanControl:
         """
         GPIO.setup(self.__pin, GPIO.OUT)
         r = GPIO.input(self.__pin)
-        self.__out.write(f"Fan pin {self.__pin}, state={r}\n")
+        self.__out.write(f"### Fan pin {self.__pin}, state={r}\n")
         return int(r)
 
     def __thermal_zone_temp(self) -> float:
         with open(FanControl.__THERMALZONE, "r") as file:
             result = float(file.read())
-        self.__out.write(f"{FanControl.__THERMALZONE} {result}\n")
+        self.__out.write(f"### {FanControl.__THERMALZONE} >> {result}\n")
         return result / 1_000
 
     def __vcgencmd_temp(self) -> float:
         result = os.popen(FanControl.__VCGENCMD).readline()
-        self.__out.write(f"{FanControl.__VCGENCMD} {result}")
+        self.__out.write(f"### {FanControl.__VCGENCMD} >> {result}")
         return float(result.replace("temp=", "").replace("'C\n", ""))
 
     def __run(self):
-
         global temp
         while True:
 
             try:
-                if self.__source_t:
-                    temp = self.__thermal_zone_temp()
-                else:
-                    temp = self.__vcgencmd_temp()
+                temp1 = self.__thermal_zone_temp()
+                temp2 = self.__vcgencmd_temp()
+                temp = temp1 and temp2
 
                 if temp >= self.__max and self.__pin_state() == 0:
-                    self.__out.write(f"{temp}°C >= max limit, fan on.\n")
+                    self.__out.write(
+                        f"### "
+                        f"{temp1}°C and {temp2}°C >= max limit, "
+                        f"fan on.\n")
                     GPIO.output(self.__pin, True)
                 if temp <= self.__min and self.__pin_state() == 1:
-                    self.__out.write(f"{temp}°C, temperature ok, fan off.\n")
+                    self.__out.write(
+                        f"### "
+                        f"{temp1}°C and {temp2}°C , temperature ok, "
+                        f"fan off.\n")
                     GPIO.output(self.__pin, False)
 
             except Exception as e:
-                self.__out.write(f"{temp}")
-                sys.stderr.write(f"Interrupted, power off fan! \n{e}\n")
+                self.__out.write(f"!!! {temp}")
+                sys.stderr.write(f"!!! Interrupted, power off fan! \n{e}\n")
                 GPIO.output(self.__pin, False)
-                self.__out.write("Interrupted, cancelling...\n")
+                self.__out.write("!!! Interrupted, cancelling...\n")
                 GPIO.cleanup()
 
             time.sleep(self.__wait)
