@@ -21,20 +21,21 @@ and [wiring image](hardware/wiring.png)
 ### The Python code
 
 * Only required package: [**_RPi.GPIO_**](https://pypi.org/project/RPi.GPIO/)
-* **_settings.py_**: contains values (integers)
-    * GPIO pin to be switched
-    * Max temperature at which the fan is switched on, 65 °C per default
-    * Min temperature at which the fan is switched off, 45 °C per default
-    * Check interval, in seconds, 60 per default
+   
 * **_control.py_** : FanControl class
-
-* **_main.py_**: An instance of FanControl will load with given parameters,
-  here only the GPIO number is required.
     * In an infinite loop temperature is checked in a certain time interval
-    * If the temperature is greater than or equal the max value, and the pin is
-      not already activated, GPIO pin will set to HIGH
-    * Is the temperature lower than or equal to the minimum value, and the pin
-      is set to HIGH, GPIO pin will set to LOW
+        * If the temperature is greater than or equal the max value, and the pin is
+          not already activated, GPIO pin will set to HIGH
+        * Is the temperature lower than or equal to the minimum value, and the pin
+          is set to HIGH, GPIO pin will set to LOW
+    * parameters:
+        * GPIO pin of connected fan
+        * Max temperature at which the fan is switched on, 60 °C per default
+        * Min temperature at which the fan is switched off, 50 °C per default
+        * Check interval, in seconds, 30 per default
+    
+* **_main.py_**: An instance of FanControl will load with given parameters.
+
 
 ### Auto run at boot up
 

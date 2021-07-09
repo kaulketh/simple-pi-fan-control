@@ -12,11 +12,9 @@ class FanControl:
     def __init__(self,
                  fan_pin: int,
                  max_temp: float = 60, min_temp: float = 50,
-                 poll_seconds: float = None
+                 poll_seconds: float = 30
                  ):
-        self.__wait = poll_seconds if poll_seconds is not None \
-                                      and poll_seconds >= 30 else 30
-
+        self.__wait = poll_seconds if poll_seconds >= 30 else 30  # poll limit
         self.__min = min_temp
         self.__max = max_temp
         self.__pin = fan_pin
