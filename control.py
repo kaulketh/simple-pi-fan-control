@@ -26,15 +26,16 @@ class FanControl:
         self.__t = None
         self.__run()
 
+    @property
     def __pin_state(self) -> int:
         """
         gets the state of pin, if 0 is switched to LOW
 
         """
         GPIO.setup(self.__pin, GPIO.OUT)
-        r = GPIO.input(self.__pin)
-        self.__out.write(f"<<< Fan pin {self.__pin}, state={r}\n")
-        return int(r)
+        state = int(GPIO.input(self.__pin))
+        self.__out.write(f"<<< Fan pin {self.__pin}, state={state}\n")
+        return state
 
     @property
     def __cpu_t(self) -> float:
@@ -58,13 +59,13 @@ class FanControl:
                 temp2 = self.__gpu_t
                 self.__t = temp1 and temp2
 
-                if self.__t >= self.__max and self.__pin_state() == 0:
+                if self.__t >= self.__max and self.__pin_state == 0:
                     self.__out.write(
                         f">>> "
                         f"{temp1}°C and {temp2}°C >= max limit, "
                         f"fan on.\n")
                     GPIO.output(self.__pin, True)
-                if self.__t <= self.__min and self.__pin_state() == 1:
+                if self.__t <= self.__min and self.__pin_state == 1:
                     self.__out.write(
                         f">>> "
                         f"{temp1}°C and {temp2}°C , temperature ok, "
