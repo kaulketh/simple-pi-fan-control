@@ -1,8 +1,8 @@
 ### Plan
 
 I would have to switch the fan directly using a small piece of software via a
-GPIO pin. The program reads the CPU temperature and then switches the fan. The
-OS should start the program periodically or automatically.
+GPIO pin. The program reads the CPU+GPU temperature and then switches the fan. 
+The OS should start the program periodically or automatically.
 
 ### Structure
 
