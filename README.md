@@ -30,11 +30,11 @@ and [wiring image](hardware/wiring.png)
           is set to HIGH, GPIO pin will set to LOW
     * parameters:
         * GPIO pin of connected fan
-        * Max temperature at which the fan is switched on, 60 °C per default
-        * Min temperature at which the fan is switched off, 50 °C per default
-        * Check interval, in seconds, 30 per default
+        * Max temperature at which the fan is switched on
+        * Min temperature at which the fan is switched off
+        * Check interval, in seconds
     
-* **_main.py_**: An instance of FanControl will load with given parameters.
+* **_main.py_**: An instance of FanControl will load with passed parameters.
 
 
 ### Auto run at boot up
