@@ -31,7 +31,7 @@ class FanControl:
         GPIO.setup(self.__pin, GPIO.OUT)
         state = int(GPIO.input(self.__pin))
         self.__out.write(
-            f"<<< Fan pin {self.__pin}: current state = {state}\n")
+            f"<<< Fan GPIO{self.__pin}: current state = {state}\n")
         return state
 
     @property
