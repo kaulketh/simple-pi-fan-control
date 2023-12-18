@@ -11,7 +11,7 @@ class FanControl:
     def __init__(self, fan_pin: int, thresholds: tuple, poll: float):
         self.__RL = 15  # request limit
         self.__wait = poll if poll > self.__RL else self.__RL
-        self.__thresholds = thresholds
+        self.__thresholds = thresholds  # min, max
         self.__pin = fan_pin
         self.__out = sys.stdout
 
@@ -30,7 +30,8 @@ class FanControl:
         """
         GPIO.setup(self.__pin, GPIO.OUT)
         state = int(GPIO.input(self.__pin))
-        self.__out.write(f"<<< Fan pin {self.__pin}, state={state}\n")
+        self.__out.write(
+            f"<<< Fan pin {self.__pin}: current state = {state}\n")
         return state
 
     @property
@@ -89,7 +90,7 @@ class FanControl:
         """
         _cmd = "vcgencmd measure_temp"
         result = os.popen(_cmd).readline()
-        self.__out.write(f"<<< {_cmd} >> {result}\n")
+        self.__out.write(f"<<< {_cmd} >> {result}")
         return float(result.replace("temp=", "").replace("'C\n", ""))
 
     def __run(self):
@@ -100,19 +101,17 @@ class FanControl:
                 cpu_t2 = self.__t_via_gpu
                 self.__temperatures = cpu_t1 and cpu_t2
 
-                def condition(i: int):
-                    p = 0 if i == 1 else 1
-                    return self.__thresholds[i] and self.__pin_state == p
-
                 def action(msg_part, pin_state):
                     GPIO.output(self.__pin, pin_state)
                     self.__out.write(f">>> {cpu_t1}°C "
                                      f"and {cpu_t2}°C {msg_part}\n")
 
-                if self.__temperatures >= condition(1):
-                    action(">= max limit, fan on.", True)
-                if self.__temperatures <= condition(0):
-                    action(", temperature ok, fan off.", False)
+                if (self.__temperatures >= self.__thresholds[0]
+                        and self.__pin_state == 0):
+                    action(">= max limit, switch on fan.", True)
+                if (self.__temperatures <= self.__thresholds[1]
+                        and self.__pin_state == 1):
+                    action(", temperatures ok, switch off fan.", False)
 
             except Exception as e:
                 t = traceback.format_exc()
