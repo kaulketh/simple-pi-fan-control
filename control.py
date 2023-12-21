@@ -56,6 +56,7 @@ class FanControl:
         Always consider balancing the frequency of readings with the actual
         need of your application to avoid unnecessary CPU usage, especially
         if you're performing other resource-intensive tasks simultaneously.
+        --Based loosely on ChatGPT--
         """
         _path = "/sys/class/thermal/thermal_zone0/temp"
         with open(_path, "r") as file:
@@ -87,6 +88,7 @@ class FanControl:
         should be sufficient to monitor and control a fan or other cooling
         systems effectively without imposing a notable performance burden on
         the Raspberry Pi.
+        --Based loosely on ChatGPT--
         """
         _cmd = "vcgencmd measure_temp"
         result = os.popen(_cmd).readline()
