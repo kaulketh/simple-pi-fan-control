@@ -24,15 +24,16 @@ class FanControl:
         self.__run()
 
     @property
-    def __pin_state(self) -> int:
+    def __pih(self) -> bool:
         """
-        state of pin, if 0 is switched to LOW
+        "Pin Is High", state of GPIO channel (HIGH=1=True or LOW=0=False)
         """
         GPIO.setup(self.__pin, GPIO.OUT)
-        state = int(GPIO.input(self.__pin))
+        lvl = GPIO.input(self.__pin)
+        b_lvl = bool(lvl)
         self.__out.write(
-            f"<<< Fan GPIO{self.__pin}: current state = {state}\n")
-        return state
+            f"<<< Fan GPIO{self.__pin} >> {b_lvl} ({lvl})\n")
+        return b_lvl
 
     @property
     def __t_via_file(self) -> float:
@@ -103,17 +104,17 @@ class FanControl:
                 cpu_t2 = self.__t_via_gpu
                 self.__temperatures = cpu_t1 and cpu_t2
 
-                def action(msg_part, pin_state):
-                    GPIO.output(self.__pin, pin_state)
+                def on(msg_part, level):
+                    GPIO.output(self.__pin, level)
                     self.__out.write(f">>> {cpu_t1}°C "
                                      f"and {cpu_t2}°C {msg_part}\n")
 
                 if (self.__temperatures >= self.__thresholds[0]
-                        and self.__pin_state == 0):
-                    action(">= max limit, switch on fan.", True)
+                        and not self.__pih):
+                    on(">= max limit, switch on fan.", True)
                 if (self.__temperatures <= self.__thresholds[1]
-                        and self.__pin_state == 1):
-                    action(", temperatures ok, switch off fan.", False)
+                        and self.__pih):
+                    on(", temperatures ok, switch off fan.", False)
 
             except Exception as e:
                 t = traceback.format_exc()
