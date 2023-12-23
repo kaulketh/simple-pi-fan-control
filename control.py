@@ -9,31 +9,36 @@ import RPi.GPIO as GPIO
 class FanControl:
 
     def __init__(self, fan_pin: int, thresholds: tuple, poll: float):
+        GPIO.setwarnings(False)
         self.__RL = 15  # request limit
         self.__wait = poll if poll > self.__RL else self.__RL
-        self.__thresholds = thresholds  # min, max
+        self.__thds = thresholds  # min, max
         self.__pin = fan_pin
         self.__out = sys.stdout
-
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.__pin, GPIO.OUT)
-        GPIO.output(self.__pin, False)
-
+        self.toggle(False)  # Start with the fan off
         self.__temperatures = None
         self.__run()
+
+    def toggle(self, level=None):
+        new_level = level if level is not None else not self.__pih
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.__pin, GPIO.OUT)
+        GPIO.output(self.__pin, new_level)
+        self.__out.write(
+            f">>> Toggle GPIO{self.__pin} >> {new_level}\n")
 
     @property
     def __pih(self) -> bool:
         """
         "Pin Is High", state of GPIO channel (HIGH=1=True or LOW=0=False)
         """
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.__pin, GPIO.OUT)
         lvl = GPIO.input(self.__pin)
-        b_lvl = bool(lvl)
+        is_high = bool(lvl)
         self.__out.write(
-            f"<<< Fan GPIO{self.__pin} >> {b_lvl} ({lvl})\n")
-        return b_lvl
+            f"<<< State GPIO{self.__pin} >> {is_high} ({lvl})\n")
+        return is_high
 
     @property
     def __t_via_file(self) -> float:
@@ -97,32 +102,31 @@ class FanControl:
         return float(result.replace("temp=", "").replace("'C\n", ""))
 
     def __run(self):
+        def operate(msg_part, level):
+            self.toggle(level)
+            self.__out.write(f">>> Temperature {msg_part}\n")
+
         while True:
             # noinspection PyBroadException
             try:
                 cpu_t1 = self.__t_via_file
                 cpu_t2 = self.__t_via_gpu
-                self.__temperatures = cpu_t1 and cpu_t2
+                high = cpu_t1 >= self.__thds[1] or cpu_t2 >= self.__thds[1]
+                low = cpu_t1 <= self.__thds[0] and cpu_t2 <= self.__thds[0]
 
-                def on(msg_part, level):
-                    GPIO.output(self.__pin, level)
-                    self.__out.write(f">>> {cpu_t1}°C "
-                                     f"and {cpu_t2}°C {msg_part}\n")
-
-                if (self.__temperatures >= self.__thresholds[0]
-                        and not self.__pih):
-                    on(">= max limit, switch on fan.", True)
-                if (self.__temperatures <= self.__thresholds[1]
-                        and self.__pih):
-                    on(", temperatures ok, switch off fan.", False)
+                if high and not self.__pih:
+                    operate("NOK, fan on", True)
+                if low and self.__pih:
+                    operate("OK, fan off", False)
 
             except Exception as e:
                 t = traceback.format_exc()
-                self.__out.write(f"!!! {self.__temperatures}")
+                self.__out.write(
+                    f"!!! {self.__t_via_file}, {self.__t_via_gpu} ")
                 sys.stderr.write(
                     f"!!! Interrupted, power off fan! \n{t}\n{e}\n")
-                GPIO.output(self.__pin, False)
                 self.__out.write("!!! Interrupted, cancelling...\n")
+                self.toggle(False)
                 GPIO.cleanup()
             time.sleep(self.__wait)
 
