@@ -10,7 +10,7 @@ class FanControl:
 
     def __init__(self, fan_pin: int, thresholds: tuple, poll: float):
         GPIO.setwarnings(False)
-        self.__RL = 15  # request limit
+        self.__RL = 10  # request limit
         self.__wait = poll if poll > self.__RL else self.__RL
         self.__thds = thresholds  # min, max
         self.__pin = fan_pin
@@ -109,10 +109,9 @@ class FanControl:
         while True:
             # noinspection PyBroadException
             try:
-                cpu_t1 = self.__t_via_file
-                cpu_t2 = self.__t_via_gpu
-                high = cpu_t1 >= self.__thds[1] or cpu_t2 >= self.__thds[1]
-                low = cpu_t1 <= self.__thds[0] and cpu_t2 <= self.__thds[0]
+                t1, t2 = self.__t_via_file, self.__t_via_gpu
+                high = t1 >= self.__thds[1] or t2 >= self.__thds[1]
+                low = t1 <= self.__thds[0] and t2 <= self.__thds[0]
 
                 if high and not self.__pih:
                     operate("NOK, fan on", True)
