@@ -1,12 +1,12 @@
 import sys
 
-import hw_setup
+import config
 from control import FanControl
 
 if __name__ == '__main__':
     try:
-        FanControl(fan_pin=hw_setup.FAN_PIN,
-                   thresholds=(hw_setup.MIN, hw_setup.MAX),
-                   poll=hw_setup.CHECK_INTERVAL)
+        FanControl(fan_pin=config.FAN_PIN,
+                   thresholds=(config.MIN, config.MAX),
+                   poll=config.CHECK_INTERVAL)
     except Exception as e:
         sys.stderr.write(f"!!! Fan control was not started\n{e}\n")
