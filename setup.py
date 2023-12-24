@@ -30,15 +30,14 @@ class InstallService(install):
     '''
 
     def run(self):
-        install.run(self)  # Call the default install functionality
-        # Add code here to create the service
-        with open(f'/etc/systemd/system/{InstallService.FILE_NAME}',
-                  'w') as service_file:
-            service_file.write(InstallService.FILE_CONTENT)
+        install.run(self)
 
-        # Example command to create a service (modify this based on your needs)
         if platform.system() == 'Linux':
             try:
+                with open(f'/etc/systemd/system/{InstallService.FILE_NAME}',
+                          'w') as service_file:
+                    service_file.write(InstallService.FILE_CONTENT)
+
                 subprocess.run(['systemctl', 'daemon-reload'])
                 subprocess.run(
                     ['systemctl', 'enable', InstallService.FILE_NAME],
