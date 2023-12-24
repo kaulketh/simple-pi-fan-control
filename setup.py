@@ -66,7 +66,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     install_requires=[
-        '<RPi.GPIO>',
+        'RPi.GPIO'
     ],
     cmdclass={
         'install': InstallService,
