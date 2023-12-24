@@ -28,11 +28,11 @@ and [wiring image](hardware/wiring.png)
           not already activated, GPIO pin will set to HIGH
         * Is the temperature lower than or equal to the minimum value, and the pin
           is set to HIGH, GPIO pin will set to LOW
-    * parameters:
-        * GPIO pin of connected fan
-        * Max temperature at which the fan is switched on
-        * Min temperature at which the fan is switched off
-        * Check interval, in seconds
+* **_config.py_** : Settings:
+    * GPIO pin of connected fan
+    * Max temperature at which the fan is switched on
+    * Min temperature at which the fan is switched off
+    * Check interval, in seconds
     
 * **_main.py_**: An instance of FanControl will load with passed parameters.
 
